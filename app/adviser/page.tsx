@@ -1,0 +1,408 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import AppShell from "@/components/layout/AppShell";
+import Header from "@/components/layout/Header";
+import { Brain, Send, Sparkles, RefreshCw, Copy, Download } from "lucide-react";
+import { AGENTS } from "@/lib/agents/types";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  activeAgents?: string[];
+}
+
+const STARTER_PROMPTS = [
+  "Analyze the AI consulting market opportunity for a new entrant",
+  "Create a SWOT analysis for a B2B SaaS startup entering healthcare",
+  "What are the top 5 risks of launching in a competitive market?",
+  "Help me build a go-to-market strategy for my fintech app",
+  "Validate my idea: an AI-powered personal finance coach",
+  "What market trends should I be tracking in 2026?",
+];
+
+export default function AdviserPage() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content:
+        "## Welcome to Adviser AI 🎯\n\nI'm your Chief Adviser — backed by 10 specialized AI agents covering research, market intelligence, strategy, finance, risk, and more.\n\n**What can I help you with today?**\n\n- 📊 **Market Analysis** — TAM/SAM/SOM, competitive landscape\n- 🎯 **Strategy** — SWOT, PESTLE, Porter's Five Forces\n- 🚀 **Startup Advice** — idea validation, GTM, fundraising\n- 💰 **Financial Modeling** — projections, unit economics\n- ⚠️ **Risk Assessment** — comprehensive risk registry\n- 📈 **Trend Intelligence** — emerging opportunities\n\nJust ask me anything — I'll route your question to the right expert agents.",
+      timestamp: new Date(),
+      activeAgents: [],
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeAgents, setActiveAgents] = useState<string[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+    setActiveAgents(["chief", "research"]);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "24px";
+    }
+
+    try {
+      const history = messages.slice(-6).map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const res = await fetch("/api/adviser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.content, history }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Request failed");
+
+      setActiveAgents(data.agents || []);
+
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.response,
+        timestamp: new Date(),
+        activeAgents: data.agents,
+      };
+
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      const errMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "I encountered an error processing your request. Please check your API key in Settings and try again.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errMsg]);
+    } finally {
+      setIsLoading(false);
+      setActiveAgents([]);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    const el = e.target;
+    el.style.height = "24px";
+    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+  };
+
+  const copyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+  };
+
+  // Simple markdown-like formatter
+  const formatContent = (content: string) => {
+    const lines = content.split("\n");
+    return lines.map((line, i) => {
+      if (line.startsWith("## ")) {
+        return (
+          <h3 key={i} style={{ color: "var(--text-primary)", marginBottom: 8, marginTop: i > 0 ? 16 : 0 }}>
+            {line.slice(3)}
+          </h3>
+        );
+      }
+      if (line.startsWith("### ")) {
+        return (
+          <h4 key={i} style={{ color: "var(--text-accent)", marginBottom: 6, marginTop: 12 }}>
+            {line.slice(4)}
+          </h4>
+        );
+      }
+      if (line.startsWith("**") && line.endsWith("**")) {
+        return (
+          <p key={i} style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+            {line.slice(2, -2)}
+          </p>
+        );
+      }
+      if (line.startsWith("- ") || line.startsWith("• ")) {
+        const text = line.slice(2);
+        const formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
+        return (
+          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
+            <span
+              style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
+              dangerouslySetInnerHTML={{ __html: formatted }}
+            />
+          </div>
+        );
+      }
+      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
+      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
+      return (
+        <p
+          key={i}
+          style={{ marginBottom: 6, color: "var(--text-secondary)" }}
+          dangerouslySetInnerHTML={{ __html: formatted }}
+        />
+      );
+    });
+  };
+
+  const allAgentNames: Record<string, string> = {
+    chief: "Chief Adviser",
+    research: "Research",
+    market: "Market Intel",
+    trend: "Trends",
+    finance: "Finance",
+    startup: "Startup",
+    tech: "Tech Arch",
+    risk: "Risk",
+    report: "Reports",
+    verify: "Verifier",
+  };
+
+  return (
+    <AppShell>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        <Header
+          title="Chief Adviser"
+          subtitle="Multi-agent strategic intelligence"
+          actions={
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() =>
+                setMessages([
+                  {
+                    id: "welcome-new",
+                    role: "assistant",
+                    content: "New session started. How can I help you?",
+                    timestamp: new Date(),
+                  },
+                ])
+              }
+            >
+              <RefreshCw size={14} /> New Session
+            </button>
+          }
+        />
+
+        {/* Agent Activity Bar */}
+        <div className="agent-activity-bar">
+          {Object.entries(allAgentNames).map(([id, name]) => (
+            <div
+              key={id}
+              className={`agent-chip ${
+                isLoading && activeAgents.includes(id)
+                  ? "active"
+                  : messages.some((m) => m.activeAgents?.includes(id))
+                  ? "done"
+                  : ""
+              }`}
+            >
+              <span
+                className={`status-dot ${
+                  isLoading && activeAgents.includes(id)
+                    ? "thinking"
+                    : messages.some((m) => m.activeAgents?.includes(id))
+                    ? "active"
+                    : "idle"
+                }`}
+              />
+              {AGENTS.find((a) => a.id === id)?.icon} {name}
+            </div>
+          ))}
+        </div>
+
+        {/* Messages */}
+        <div className="chat-messages" style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+                gap: 8,
+              }}
+            >
+              {msg.role === "assistant" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingLeft: 4 }}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "var(--gradient-brand)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Brain size={13} color="white" />
+                  </div>
+                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-accent)" }}>
+                    Chief Adviser
+                  </span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              )}
+
+              <div
+                className={msg.role === "user" ? "message-user" : "message-ai"}
+                style={{ maxWidth: msg.role === "assistant" ? "90%" : "75%" }}
+              >
+                {msg.role === "assistant" ? (
+                  <div className="ai-output">{formatContent(msg.content)}</div>
+                ) : (
+                  msg.content
+                )}
+              </div>
+
+              {msg.role === "assistant" && msg.id !== "welcome" && (
+                <button
+                  onClick={() => copyMessage(msg.content)}
+                  className="btn btn-ghost btn-sm"
+                  style={{ alignSelf: "flex-start", padding: "4px 10px" }}
+                >
+                  <Copy size={12} /> Copy
+                </button>
+              )}
+            </div>
+          ))}
+
+          {isLoading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "16px 20px",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-lg)",
+                alignSelf: "flex-start",
+                maxWidth: 300,
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: "var(--gradient-brand)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Brain size={13} color="white" />
+              </div>
+              <div>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: 4 }}>
+                  Agents working...
+                </div>
+                <div className="typing-indicator">
+                  <div className="typing-dot" />
+                  <div className="typing-dot" />
+                  <div className="typing-dot" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Starter Prompts */}
+        {messages.length <= 1 && (
+          <div
+            style={{
+              padding: "0 24px 16px",
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            {STARTER_PROMPTS.map((p) => (
+              <button
+                key={p}
+                onClick={() => setInput(p)}
+                className="btn btn-ghost btn-sm"
+                style={{ fontSize: "0.75rem", textAlign: "left", whiteSpace: "normal", height: "auto", padding: "6px 12px" }}
+              >
+                <Sparkles size={11} color="var(--text-accent)" />
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input Area */}
+        <div className="chat-input-area">
+          <div className="chat-input-wrapper">
+            <textarea
+              ref={textareaRef}
+              className="chat-textarea"
+              placeholder="Ask anything — strategy, research, market analysis, startup advice..."
+              value={input}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              style={{ height: 24 }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isLoading}
+              className="btn btn-primary btn-sm"
+              style={{ flexShrink: 0, padding: "8px 14px" }}
+            >
+              {isLoading ? (
+                <RefreshCw size={15} className="animate-spin" />
+              ) : (
+                <Send size={15} />
+              )}
+            </button>
+          </div>
+          <div
+            style={{
+              textAlign: "center",
+              fontSize: "0.7rem",
+              color: "var(--text-muted)",
+              marginTop: 8,
+            }}
+          >
+            Press Enter to send · Shift+Enter for new line · 10 AI agents active
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
