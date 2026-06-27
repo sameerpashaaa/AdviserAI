@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import GradientBackground from "@/components/ui/GradientBackground";
 import {
   Brain,
@@ -190,32 +191,14 @@ export default function LandingPage() {
           borderBottom: "1px solid var(--border-default)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: "#292524",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Brain size={18} color="white" />
-          </div>
-          <span
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "1.25rem",
-              fontWeight: 300,
-              color: "#0c0a09",
-              letterSpacing: "-0.32px",
-            }}
-          >
-            Adviser AI
-          </span>
-        </div>
+        <Image
+          src="/adviser_ai_logo.svg"
+          alt="Adviser AI"
+          width={230}
+          height={79}
+          priority
+          style={{ display: "block", height: 40, width: "auto" }}
+        />
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <Link
             href="/dashboard"
@@ -715,29 +698,13 @@ export default function LandingPage() {
       >
         <div className="container">
           <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 12 }}>
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 6,
-                background: "var(--gradient-brand)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Brain size={12} color="white" />
-            </div>
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 300,
-                fontSize: "0.95rem",
-                color: "var(--text-primary)",
-              }}
-            >
-              Adviser AI
-            </span>
+          <Image
+            src="/adviser_ai_logo.svg"
+            alt="Adviser AI"
+            width={150}
+            height={52}
+            style={{ display: "block", height: 32, width: "auto" }}
+          />
           </div>
           <p style={{ fontSize: "0.8125rem" }}>
             © 2026 Adviser AI. Democratizing world-class strategic advisory.

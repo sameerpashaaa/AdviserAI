@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Brain,
   LayoutDashboard,
   MessageSquare,
   Search,
@@ -38,23 +38,14 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="sidebar-logo">
         <Link href="/" style={{ textDecoration: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                background: "#292524",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Brain size={18} color="white" />
-            </div>
-            <span className="sidebar-logo-text">Adviser AI</span>
-          </div>
+          <Image
+            src="/adviser_ai_logo.svg"
+            alt="Adviser AI"
+            width={230}
+            height={79}
+            priority
+            style={{ display: "block", height: 40, width: "auto" }}
+          />
         </Link>
         <div
           className="badge badge-primary mt-2"

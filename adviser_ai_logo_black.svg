@@ -1,0 +1,46 @@
+<svg viewBox="0 0 540 140" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Adviser AI logo — Black</title>
+  <!-- Mark (Strategic Apex Compass & Agent Network) -->
+  <g transform="translate(10, 10)">
+    <!-- Outer Hexagon Matrix -->
+    <polygon points="60,5 110,33 110,87 60,115 10,87 10,33" fill="#0c0a09" stroke="#292524" stroke-width="1.5"/>
+    
+    <!-- Geometric Triangles / Facets -->
+    <polygon points="60,5 10,33 60,60" fill="#1c1917" opacity="0.8"/>
+    <polygon points="60,5 110,33 60,60" fill="#292524" opacity="0.5"/>
+    <polygon points="10,33 60,60 10,87" fill="#0c0a09"/>
+    <polygon points="110,33 60,60 110,87" fill="#1c1917"/>
+    
+    <!-- Central Diamond (Apex Compass Needle) -->
+    <polygon points="60,18 82,60 60,102 38,60" fill="#ffffff"/>
+    <polygon points="60,18 60,102 38,60" fill="#e7e5e4" opacity="0.5"/>
+    
+    <!-- Node Network Connections -->
+    <line x1="60" y1="18" x2="10" y2="33" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+    <line x1="60" y1="18" x2="110" y2="33" stroke="#ffffff" stroke-width="1.2" opacity="0.7"/>
+    <line x1="60" y1="102" x2="10" y2="87" stroke="#ffffff" stroke-width="1.2" opacity="0.5"/>
+    <line x1="60" y1="102" x2="110" y2="87" stroke="#ffffff" stroke-width="1.2" opacity="0.5"/>
+
+    <!-- Agent Nodes -->
+    <circle cx="60" cy="5" r="4" fill="#ffffff"/>
+    <circle cx="110" cy="33" r="3.5" fill="#a8a29e"/>
+    <circle cx="10" cy="33" r="3.5" fill="#a8a29e"/>
+    <circle cx="110" cy="87" r="3.5" fill="#57534e"/>
+    <circle cx="10" cy="87" r="3.5" fill="#57534e"/>
+    <circle cx="60" cy="115" r="4" fill="#ffffff"/>
+    
+    <!-- Center Core Intelligence Orb -->
+    <circle cx="60" cy="60" r="5.5" fill="#0c0a09"/>
+    <circle cx="60" cy="60" r="2.5" fill="#ffffff"/>
+  </g>
+
+  <!-- Typography -->
+  <!-- Main Title -->
+  <text x="145" y="72" style="fill:#0c0a09; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size:52px; font-weight:800; letter-spacing:-1.5px;">Adviser <tspan style="fill:#0c0a09; font-weight:900;">AI</tspan></text>
+  
+  <!-- Subtitle -->
+  <text x="148" y="100" style="fill:#57534e; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size:15px; font-weight:600; letter-spacing:4.5px;">STRATEGIC INTELLIGENCE</text>
+  
+  <!-- Decorative Divider Accent -->
+  <rect x="148" y="109" width="370" height="2" rx="1" fill="#0c0a09" opacity="0.85"/>
+</svg>
