@@ -251,14 +251,10 @@ export default function LandingPage() {
                 marginBottom: 24,
               }}
             >
-              <span style={{ fontWeight: 700 }}>
-                Your Personal{" "}
-                <span className="gradient-text" style={{ fontWeight: 700 }}>
-                  McKinsey Partner
-                </span>
-              </span>
+              <span style={{ fontWeight: 700 }}>Your Personal </span>
+              <span className="gradient-text">McKinsey Partner</span>
               <br />
-              <span style={{ fontWeight: 300 }}>Powered by AI</span>
+              <span style={{ fontWeight: 700 }}>Powered by AI</span>
             </h1>
             <p
               style={{
