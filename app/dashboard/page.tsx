@@ -4,18 +4,13 @@ import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import Link from "next/link";
 import {
-  Brain,
-  Search,
-  Target,
-  TrendingUp,
-  Zap,
-  Briefcase,
-  FileText,
   ArrowRight,
   Activity,
   Clock,
   Star,
+  FileText,
 } from "lucide-react";
+import { AGENTS } from "@/lib/agents/types";
 
 const stats = [
   { label: "Analyses Run", value: "24", change: "+8 this week", up: true, icon: Activity },
@@ -189,23 +184,7 @@ export default function DashboardPage() {
               {recentSessions.map((s, i) => (
                 <div
                   key={i}
-                  style={{
-                    background: "var(--bg-card)",
-                    border: "1px solid var(--border-subtle)",
-                    borderRadius: "var(--radius-md)",
-                    padding: "14px 16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.borderColor = "var(--glass-border)")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.borderColor = "var(--border-subtle)")
-                  }
+                  className="session-item"
                 >
                   <div
                     style={{
@@ -253,20 +232,9 @@ export default function DashboardPage() {
               AI Agents
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {[
-                { name: "Chief Adviser", icon: "🎯", status: "active" },
-                { name: "Research Agent", icon: "🔬", status: "active" },
-                { name: "Market Intelligence", icon: "📊", status: "active" },
-                { name: "Trend Analysis", icon: "📈", status: "active" },
-                { name: "Financial Analyst", icon: "💰", status: "active" },
-                { name: "Startup Consultant", icon: "🚀", status: "active" },
-                { name: "Tech Architect", icon: "🏗️", status: "active" },
-                { name: "Risk Assessment", icon: "⚠️", status: "active" },
-                { name: "Report Generator", icon: "📋", status: "active" },
-                { name: "Fact Verifier", icon: "✅", status: "active" },
-              ].map((agent) => (
+              {AGENTS.map((agent) => (
                 <div
-                  key={agent.name}
+                  key={agent.id}
                   style={{
                     background: "var(--bg-card)",
                     border: "1px solid var(--border-subtle)",

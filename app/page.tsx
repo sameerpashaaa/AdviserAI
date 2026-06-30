@@ -3,20 +3,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import GradientBackground from "@/components/ui/GradientBackground";
+import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
+import Navbar from "@/components/layout/Navbar";
 import {
   Brain,
   ArrowRight,
   CheckCircle,
   Zap,
-  Search,
-  Target,
-  TrendingUp,
-  Shield,
-  FileText,
-  Briefcase,
   Star,
-  BarChart3,
-  Users,
+  TrendingUp,
   Globe,
 } from "lucide-react";
 
@@ -173,58 +168,15 @@ export default function LandingPage() {
   return (
     <div style={{ position: "relative" }}>
       <GradientBackground />
-      {/* ── Navigation ── */}
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 200,
-          padding: "0 32px",
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: "rgba(245,245,245,0.85)",
-          backdropFilter: "blur(20px)",
-          borderBottom: "1px solid var(--border-default)",
-        }}
-      >
-        <Image
-          src="/adviser_ai_logo.svg"
-          alt="Adviser AI"
-          width={230}
-          height={79}
-          priority
-          style={{ display: "block", height: 40, width: "auto" }}
-        />
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <Link
-            href="/dashboard"
-            className="btn btn-ghost btn-sm"
-          >
-            Sign In
-          </Link>
-          <Link href="/dashboard" className="btn btn-primary btn-sm">
-            Get Started <ArrowRight size={14} />
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── Hero ── */}
-      <section className="hero-section" style={{ paddingTop: 64 }}>
+      <section className="hero-section" style={{ paddingTop: 80 }}>
         <div
           className="container"
           style={{ position: "relative", textAlign: "center" }}
         >
           <div className="animate-fade-in-up">
-            <div
-              className="badge badge-primary"
-              style={{ marginBottom: 24, fontSize: "0.8rem", padding: "4px 14px" }}
-            >
-              <Zap size={12} /> 10 Specialized AI Agents · Enterprise Intelligence at $49/mo
-            </div>
             <h1
               style={{
                 fontFamily: "var(--font-display)",
@@ -478,16 +430,35 @@ export default function LandingPage() {
           </div>
           <div className="grid-4">
             {features.map((f) => (
-              <div key={f.title} className="feature-card">
-                <div
-                  className="feature-icon"
-                  style={{ background: f.color, fontSize: "1.5rem" }}
-                >
-                  {f.icon}
-                </div>
-                <h4 style={{ marginBottom: 8, color: "var(--text-primary)" }}>{f.title}</h4>
-                <p style={{ fontSize: "0.875rem", lineHeight: 1.6 }}>{f.desc}</p>
-              </div>
+              <CardContainer key={f.title} containerClassName="">
+                <CardBody className="feature-card">
+                  <CardItem
+                    translateZ={40}
+                    style={{ marginBottom: 16, display: "flex" }}
+                  >
+                    <div
+                      className="feature-icon"
+                      style={{ background: f.color, fontSize: "1.5rem", marginBottom: 0 }}
+                    >
+                      {f.icon}
+                    </div>
+                  </CardItem>
+                  <CardItem
+                    translateZ={55}
+                    as="h4"
+                    style={{ marginBottom: 8, color: "var(--text-primary)" }}
+                  >
+                    {f.title}
+                  </CardItem>
+                  <CardItem
+                    translateZ={35}
+                    as="p"
+                    style={{ fontSize: "0.875rem", lineHeight: 1.6 }}
+                  >
+                    {f.desc}
+                  </CardItem>
+                </CardBody>
+              </CardContainer>
             ))}
           </div>
         </div>
@@ -699,10 +670,10 @@ export default function LandingPage() {
         <div className="container">
           <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 12 }}>
           <Image
-            src="/adviser_ai_logo.svg"
+            src="/AdviserAI_logo11.png"
             alt="Adviser AI"
-            width={150}
-            height={52}
+            width={1254}
+            height={1254}
             style={{ display: "block", height: 32, width: "auto" }}
           />
           </div>

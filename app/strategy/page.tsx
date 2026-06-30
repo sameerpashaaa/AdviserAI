@@ -3,7 +3,8 @@
 import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
-import { Target, RefreshCw, Copy, ChevronDown } from "lucide-react";
+import { Target, RefreshCw, Copy } from "lucide-react";
+import { formatMarkdown } from "@/lib/formatMarkdown";
 
 const FRAMEWORKS = [
   { id: "SWOT", label: "SWOT Analysis", icon: "🎯", desc: "Strengths, Weaknesses, Opportunities, Threats" },
@@ -46,28 +47,7 @@ export default function StrategyPage() {
     }
   };
 
-  const formatText = (text: string) => {
-    return text.split("\n").map((line, i) => {
-      if (line.startsWith("## "))
-        return <h3 key={i} style={{ color: "var(--text-primary)", margin: "20px 0 8px", borderBottom: "1px solid var(--border-subtle)", paddingBottom: 8 }}>{line.slice(3)}</h3>;
-      if (line.startsWith("### "))
-        return <h4 key={i} style={{ color: "var(--text-accent)", margin: "14px 0 6px" }}>{line.slice(4)}</h4>;
-      if (line.startsWith("**") && line.endsWith("**"))
-        return <p key={i} style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>{line.slice(2, -2)}</p>;
-      if (line.startsWith("- ") || line.startsWith("• ")) {
-        const formatted = line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
-            <span style={{ color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />
-          </div>
-        );
-      }
-      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
-      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
-      return <p key={i} style={{ marginBottom: 6, color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />;
-    });
-  };
+
 
   return (
     <AppShell>
@@ -204,7 +184,12 @@ export default function StrategyPage() {
                     <Copy size={13} /> Copy
                   </button>
                 </div>
-                <div className="ai-output">{formatText(result)}</div>
+                <div className="ai-output">
+                  {formatMarkdown(result, {
+                    h3Style: { borderBottom: "1px solid var(--border-subtle)", paddingBottom: 8 },
+                    liStyle: { marginBottom: 6, fontSize: "0.9375rem" },
+                  })}
+                </div>
               </div>
             )}
           </div>

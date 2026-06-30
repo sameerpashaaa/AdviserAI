@@ -2,7 +2,7 @@
 
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
-import { FileText, Download, Search, Filter, Clock, Plus } from "lucide-react";
+import { FileText, Download, Search, Clock, Plus } from "lucide-react";
 import Link from "next/link";
 
 const MOCK_REPORTS = [

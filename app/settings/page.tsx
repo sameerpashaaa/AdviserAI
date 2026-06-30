@@ -2,7 +2,7 @@
 
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
-import { Settings, Key, User, Bell, Shield, Brain, Save, Eye, EyeOff } from "lucide-react";
+import { Key, User, Bell, Shield, Brain, Save, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 export default function SettingsPage() {

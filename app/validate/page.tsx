@@ -3,7 +3,7 @@
 import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
-import { Zap, RefreshCw, Copy, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { Zap, RefreshCw, Copy } from "lucide-react";
 
 const BUSINESS_MODELS = [
   "SaaS / Subscription", "Marketplace", "E-commerce / DTC", "Freemium",

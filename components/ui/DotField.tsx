@@ -30,6 +30,19 @@ interface Dot {
   y: number;
 }
 
+interface DotFieldInternalProps {
+  dotRadius: number;
+  dotSpacing: number;
+  cursorRadius: number;
+  cursorForce: number;
+  bulgeOnly: boolean;
+  bulgeStrength: number;
+  sparkle: boolean;
+  waveAmplitude: number;
+  gradientFrom: string;
+  gradientTo: string;
+}
+
 const DotField = memo(
   ({
     dotRadius = 1.5,
@@ -63,7 +76,18 @@ const DotField = memo(
     const sizeRef = useRef({ w: 0, h: 0, offsetX: 0, offsetY: 0 });
     const glowOpacity = useRef(0);
     const engagement = useRef(0);
-    const propsRef = useRef<any>({});
+    const propsRef = useRef<DotFieldInternalProps>({
+      dotRadius,
+      dotSpacing,
+      cursorRadius,
+      cursorForce,
+      bulgeOnly,
+      bulgeStrength,
+      sparkle,
+      waveAmplitude,
+      gradientFrom,
+      gradientTo,
+    });
     propsRef.current = {
       dotRadius,
       dotSpacing,
@@ -87,10 +111,10 @@ const DotField = memo(
       const ctx = canvas.getContext("2d", { alpha: true });
       if (!ctx) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      let resizeTimer: any;
+      let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 
       function resize() {
-        clearTimeout(resizeTimer);
+        if (resizeTimer) clearTimeout(resizeTimer);
         resizeTimer = setTimeout(doResize, 100);
       }
 

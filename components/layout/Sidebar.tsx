@@ -39,10 +39,10 @@ export default function Sidebar() {
       <div className="sidebar-logo">
         <Link href="/" style={{ textDecoration: "none" }}>
           <Image
-            src="/adviser_ai_logo.svg"
+            src="/AdviserAI_logo11.png"
             alt="Adviser AI"
-            width={230}
-            height={79}
+            width={1254}
+            height={1254}
             priority
             style={{ display: "block", height: 40, width: "auto" }}
           />

@@ -1,66 +1,76 @@
 <svg viewBox="0 0 540 140" role="img" xmlns="http://www.w3.org/2000/svg">
   <title>Adviser AI logo</title>
   <defs>
-    <linearGradient id="onyx-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1c1917"/>
-      <stop offset="100%" stop-color="#0c0a09"/>
-    </linearGradient>
     <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f59e0b"/>
-      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
       <stop offset="100%" stop-color="#b45309"/>
     </linearGradient>
-    <linearGradient id="gold-light" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#d97706"/>
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.1"/>
     </filter>
   </defs>
 
-  <!-- Mark (Strategic Apex Compass & Agent Network) -->
-  <g transform="translate(10, 10)">
-    <!-- Outer Hexagon Matrix -->
-    <polygon points="60,5 110,33 110,87 60,115 10,87 10,33" fill="url(#onyx-grad)" stroke="#44403c" stroke-width="1.5"/>
+  <!-- High-End Monogram Logo Mark (A & I Interlocking Serif Monogram) -->
+  <g transform="translate(15, 10)">
+    <!-- Standalone Monogram Frame (Centered around 55, 60) -->
     
-    <!-- Geometric Triangles / Facets -->
-    <polygon points="60,5 10,33 60,60" fill="#292524" opacity="0.8"/>
-    <polygon points="60,5 110,33 60,60" fill="#44403c" opacity="0.5"/>
-    <polygon points="10,33 60,60 10,87" fill="#1c1917"/>
-    <polygon points="110,33 60,60 110,87" fill="#292524"/>
-    
-    <!-- Central Gold Diamond (Apex Compass Needle) -->
-    <polygon points="60,18 82,60 60,102 38,60" fill="url(#gold-grad)"/>
-    <polygon points="60,18 60,102 38,60" fill="#b45309" opacity="0.35"/>
-    
-    <!-- Node Network Connections -->
-    <line x1="60" y1="18" x2="10" y2="33" stroke="#f59e0b" stroke-width="1.2" opacity="0.7"/>
-    <line x1="60" y1="18" x2="110" y2="33" stroke="#f59e0b" stroke-width="1.2" opacity="0.7"/>
-    <line x1="60" y1="102" x2="10" y2="87" stroke="#d97706" stroke-width="1.2" opacity="0.5"/>
-    <line x1="60" y1="102" x2="110" y2="87" stroke="#d97706" stroke-width="1.2" opacity="0.5"/>
+    <!-- 1. LETTER 'I' -->
+    <!-- Top & Bottom Serifs + Fillets + Central Column -->
+    <path d="
+      M 28 15 
+      H 82 
+      C 73 15 67 22 67 32 
+      V 88 
+      C 67 98 73 105 82 105 
+      H 28 
+      C 37 105 43 98 43 88 
+      V 32 
+      C 43 22 37 15 28 15 Z
+    " fill="#0c0a09" />
 
-    <!-- Agent Nodes -->
-    <circle cx="60" cy="5" r="4" fill="url(#gold-light)" filter="url(#glow)"/>
-    <circle cx="110" cy="33" r="3.5" fill="#d97706"/>
-    <circle cx="10" cy="33" r="3.5" fill="#d97706"/>
-    <circle cx="110" cy="87" r="3.5" fill="#78716c"/>
-    <circle cx="10" cy="87" r="3.5" fill="#78716c"/>
-    <circle cx="60" cy="115" r="4" fill="url(#gold-light)"/>
-    
-    <!-- Center Core Intelligence Orb -->
-    <circle cx="60" cy="60" r="5.5" fill="#ffffff" filter="url(#glow)"/>
-    <circle cx="60" cy="60" r="2.5" fill="#0c0a09"/>
+    <!-- 2. KNOCKOUT GAP (White / BG contour around overlapping strokes of 'A') -->
+    <!-- Apex & Slants knockout -->
+    <path d="
+      M 55 24 L 20 105
+      M 55 24 L 90 105
+      M 34 68 H 76
+    " stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none" />
+
+    <!-- 3. LETTER 'A' -->
+    <!-- Left Thin Hairline Leg of A -->
+    <path d="M 55 23 L 20 105" stroke="#0c0a09" stroke-width="2.8" stroke-linecap="butt" />
+    <!-- Left Serif Foot -->
+    <path d="M 12 105 H 28 C 24 105 21 103 20 100" stroke="#0c0a09" stroke-width="2" fill="none" />
+
+    <!-- Right Heavy Thick Stem of A -->
+    <path d="
+      M 53 23 
+      L 58 23 
+      L 93 105 
+      H 81 
+      Z
+    " fill="#0c0a09" />
+    <!-- Right Serif Foot -->
+    <path d="M 75 105 H 100 C 95 105 92 103 91 100" stroke="#0c0a09" stroke-width="2" fill="none" />
+
+    <!-- Apex Arch Connection -->
+    <path d="
+      M 55 20 
+      C 52 20 49 24 49 28 
+      C 49 32 52 35 55 35 
+      C 58 35 61 32 61 28 
+      C 61 24 58 20 55 20 Z
+    " fill="#0c0a09" opacity="0.9"/>
+
+    <!-- A Crossbar -->
+    <path d="M 36 68 H 74" stroke="#0c0a09" stroke-width="3" stroke-linecap="square" />
   </g>
 
   <!-- Typography -->
-  <!-- Main Title -->
-  <text x="145" y="72" style="fill:#0c0a09; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size:52px; font-weight:800; letter-spacing:-1.5px;">Adviser <tspan style="fill:url(#gold-grad); font-weight:900;">AI</tspan></text>
-  
-  <!-- Subtitle -->
-  <text x="148" y="100" style="fill:#78716c; font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size:15px; font-weight:600; letter-spacing:4.5px;">STRATEGIC INTELLIGENCE</text>
-  
-  <!-- Decorative Divider Accent -->
-  <rect x="148" y="109" width="370" height="2" rx="1" fill="url(#gold-grad)" opacity="0.85"/>
+  <g transform="translate(145, 0)">
+    <text x="0" y="72" style="fill:#0c0a09; font-family:'Playfair Display', 'Bodoni MT', 'Didot', 'Georgia', serif; font-size:48px; font-weight:700; letter-spacing:-0.5px;">Adviser <tspan style="fill:url(#gold-grad); font-family:'Inter', sans-serif; font-weight:800; letter-spacing:0px;">AI</tspan></text>
+    <text x="2" y="98" style="fill:#78716c; font-family:'Inter', -apple-system, sans-serif; font-size:13px; font-weight:600; letter-spacing:4.5px;">STRATEGIC INTELLIGENCE</text>
+    <rect x="2" y="107" width="360" height="2" rx="1" fill="url(#gold-grad)" opacity="0.85"/>
+  </g>
 </svg>

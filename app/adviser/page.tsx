@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
-import { Brain, Send, Sparkles, RefreshCw, Copy, Download } from "lucide-react";
+import { Brain, Send, Sparkles, RefreshCw, Copy } from "lucide-react";
 import { AGENTS } from "@/lib/agents/types";
+import { formatMarkdown } from "@/lib/formatMarkdown";
 
 interface Message {
   id: string;
@@ -90,7 +91,7 @@ export default function AdviserPage() {
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
+    } catch {
       const errMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
@@ -123,55 +124,7 @@ export default function AdviserPage() {
     navigator.clipboard.writeText(content);
   };
 
-  // Simple markdown-like formatter
-  const formatContent = (content: string) => {
-    const lines = content.split("\n");
-    return lines.map((line, i) => {
-      if (line.startsWith("## ")) {
-        return (
-          <h3 key={i} style={{ color: "var(--text-primary)", marginBottom: 8, marginTop: i > 0 ? 16 : 0 }}>
-            {line.slice(3)}
-          </h3>
-        );
-      }
-      if (line.startsWith("### ")) {
-        return (
-          <h4 key={i} style={{ color: "var(--text-accent)", marginBottom: 6, marginTop: 12 }}>
-            {line.slice(4)}
-          </h4>
-        );
-      }
-      if (line.startsWith("**") && line.endsWith("**")) {
-        return (
-          <p key={i} style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
-            {line.slice(2, -2)}
-          </p>
-        );
-      }
-      if (line.startsWith("- ") || line.startsWith("• ")) {
-        const text = line.slice(2);
-        const formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
-            <span
-              style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}
-              dangerouslySetInnerHTML={{ __html: formatted }}
-            />
-          </div>
-        );
-      }
-      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
-      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
-      return (
-        <p
-          key={i}
-          style={{ marginBottom: 6, color: "var(--text-secondary)" }}
-          dangerouslySetInnerHTML={{ __html: formatted }}
-        />
-      );
-    });
-  };
+
 
   const allAgentNames: Record<string, string> = {
     chief: "Chief Adviser",
@@ -279,7 +232,12 @@ export default function AdviserPage() {
                 style={{ maxWidth: msg.role === "assistant" ? "90%" : "75%" }}
               >
                 {msg.role === "assistant" ? (
-                  <div className="ai-output">{formatContent(msg.content)}</div>
+                  <div className="ai-output">
+                    {formatMarkdown(msg.content, {
+                      h3Style: { marginBottom: 8 },
+                      h4Style: { marginBottom: 6, marginTop: 12 },
+                    })}
+                  </div>
                 ) : (
                   msg.content
                 )}
