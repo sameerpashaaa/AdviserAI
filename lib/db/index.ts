@@ -11,16 +11,27 @@ const connectionString =
   process.env.DATABASE_URL_NON_POOLING ||
   process.env.STORAGE_POSTGRES_URL_NON_POOLING;
 
+import { parse } from "pg-connection-string";
+
 let pool: Pool | null = null;
 let dbInstance: ReturnType<typeof drizzle> | null = null;
 
-export function getDb() {
+function createPool() {
   if (!connectionString) {
     throw new Error("DATABASE_URL is required to initialize the database layer.");
   }
 
+  const poolConfig = parse(connectionString);
+  
+  // Set rejectUnauthorized: false to bypass self-signed certificate issues in TLS chains
+  poolConfig.ssl = { rejectUnauthorized: false } as any;
+
+  return new Pool(poolConfig as any);
+}
+
+export function getDb() {
   if (!pool) {
-    pool = new Pool({ connectionString });
+    pool = createPool();
   }
 
   if (!dbInstance) {
@@ -31,12 +42,8 @@ export function getDb() {
 }
 
 export function getPool() {
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is required to initialize the database layer.");
-  }
-
   if (!pool) {
-    pool = new Pool({ connectionString });
+    pool = createPool();
   }
 
   return pool;
