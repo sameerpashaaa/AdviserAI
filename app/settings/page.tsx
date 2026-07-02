@@ -3,16 +3,94 @@
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import { Key, User, Bell, Shield, Brain, Save, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type SettingsState = {
+  apiKey: string;
+  fullName: string;
+  email: string;
+  company: string;
+  role: string;
+  analysisDepth: string;
+  responseFormat: string;
+  language: string;
+  emailDigestEnabled: boolean;
+  trendAlertsEnabled: boolean;
+  creditWarningsEnabled: boolean;
+};
+
+const DEFAULT_SETTINGS: SettingsState = {
+  apiKey: "",
+  fullName: "Sameer Pasha",
+  email: "",
+  company: "",
+  role: "",
+  analysisDepth: "Standard",
+  responseFormat: "Structured (Recommended)",
+  language: "English",
+  emailDigestEnabled: true,
+  trendAlertsEnabled: true,
+  creditWarningsEnabled: true,
+};
 
 export default function SettingsPage() {
-  const [apiKey, setApiKey] = useState("");
+  const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
   const [showKey, setShowKey] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (!response.ok) throw new Error("Failed to load settings");
+        const data = await response.json();
+
+        if (data?.settings) {
+          setSettings({
+            apiKey: "",
+            fullName: data.settings.fullName ?? DEFAULT_SETTINGS.fullName,
+            email: data.settings.email ?? DEFAULT_SETTINGS.email,
+            company: data.settings.company ?? DEFAULT_SETTINGS.company,
+            role: data.settings.role ?? DEFAULT_SETTINGS.role,
+            analysisDepth: data.settings.analysisDepth ?? DEFAULT_SETTINGS.analysisDepth,
+            responseFormat: data.settings.responseFormat ?? DEFAULT_SETTINGS.responseFormat,
+            language: data.settings.language ?? DEFAULT_SETTINGS.language,
+            emailDigestEnabled: data.settings.emailDigestEnabled ?? DEFAULT_SETTINGS.emailDigestEnabled,
+            trendAlertsEnabled: data.settings.trendAlertsEnabled ?? DEFAULT_SETTINGS.trendAlertsEnabled,
+            creditWarningsEnabled: data.settings.creditWarningsEnabled ?? DEFAULT_SETTINGS.creditWarningsEnabled,
+          });
+        }
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Failed to load settings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadSettings();
+  }, []);
+
+  const handleSave = async () => {
+    setError("");
+    try {
+      const response = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error ?? "Failed to save settings");
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Failed to save settings");
+    }
   };
 
   const sections = [
@@ -28,8 +106,8 @@ export default function SettingsPage() {
             <input
               className="input"
               type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              value={settings.apiKey}
+              onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
               style={{ paddingRight: 44 }}
             />
             <button
@@ -40,13 +118,13 @@ export default function SettingsPage() {
             </button>
           </div>
           <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: 8 }}>
-            Your API key is stored locally and used to power all 10 AI agents. Get your key at{" "}
+            This key is stored locally in your browser so you can prepare workspace settings now. The current runtime still uses the shared server key. Get your key at{" "}
             <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-accent)" }}>
               aistudio.google.com
             </a>
           </p>
-          <div className="badge badge-success" style={{ marginTop: 12 }}>
-            ✓ Connected to Gemini 2.5 Flash
+          <div className="badge badge-neutral" style={{ marginTop: 12 }}>
+            ✓ Saved locally for this browser
           </div>
         </div>
       ),
@@ -57,16 +135,21 @@ export default function SettingsPage() {
       content: (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[
-            { label: "Full Name", placeholder: "Your name", value: "Sameer Pasha" },
-            { label: "Email Address", placeholder: "your@email.com", value: "" },
-            { label: "Company / Organization", placeholder: "Your company", value: "" },
-            { label: "Role", placeholder: "e.g. Founder, Product Manager, Analyst", value: "" },
-          ].map(({ label, placeholder, value }) => (
+            { label: "Full Name", placeholder: "Your name", key: "fullName" as const },
+            { label: "Email Address", placeholder: "your@email.com", key: "email" as const },
+            { label: "Company / Organization", placeholder: "Your company", key: "company" as const },
+            { label: "Role", placeholder: "e.g. Founder, Product Manager, Analyst", key: "role" as const },
+          ].map(({ label, placeholder, key }) => (
             <div key={label}>
               <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 6 }}>
                 {label}
               </label>
-              <input className="input" placeholder={placeholder} defaultValue={value} />
+              <input
+                className="input"
+                placeholder={placeholder}
+                value={settings[key]}
+                onChange={(e) => setSettings((prev) => ({ ...prev, [key]: e.target.value }))}
+              />
             </div>
           ))}
         </div>
@@ -78,16 +161,21 @@ export default function SettingsPage() {
       content: (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {[
-            { label: "Default Analysis Depth", desc: "Standard or Deep for each research query", options: ["Standard", "Deep"] },
-            { label: "Response Format", desc: "How AI structures its responses", options: ["Structured (Recommended)", "Narrative", "Bullet Points"] },
-            { label: "Language", desc: "Output language preference", options: ["English", "Spanish", "French", "German"] },
-          ].map(({ label, desc, options }) => (
+            { label: "Default Analysis Depth", desc: "Standard or Deep for each research query", options: ["Standard", "Deep"], key: "analysisDepth" as const },
+            { label: "Response Format", desc: "How AI structures its responses", options: ["Structured (Recommended)", "Narrative", "Bullet Points"], key: "responseFormat" as const },
+            { label: "Language", desc: "Output language preference", options: ["English", "Spanish", "French", "German"], key: "language" as const },
+          ].map(({ label, desc, options, key }) => (
             <div key={label}>
               <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: 4 }}>
                 {label}
               </label>
               <p style={{ fontSize: "0.75rem", marginBottom: 8 }}>{desc}</p>
-              <select className="input" style={{ cursor: "pointer" }}>
+              <select
+                className="input"
+                style={{ cursor: "pointer" }}
+                value={settings[key]}
+                onChange={(e) => setSettings((prev) => ({ ...prev, [key]: e.target.value }))}
+              >
                 {options.map((o) => <option key={o}>{o}</option>)}
               </select>
             </div>
@@ -171,6 +259,18 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.08)", display: "grid", placeItems: "center" }}>
+          <div className="card" style={{ padding: 20 }}>Loading settings...</div>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div style={{ position: "fixed", right: 24, bottom: 24, maxWidth: 360, padding: 16, borderRadius: 12, background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>
+          {error}
+        </div>
+      )}
     </AppShell>
   );
 }

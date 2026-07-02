@@ -4,6 +4,7 @@ import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import { Briefcase, RefreshCw, Copy, User } from "lucide-react";
+import { renderMarkdown, renderInline } from "@/lib/safeMarkdown";
 
 const EXPERIENCE_LEVELS = ["0-2 years", "3-5 years", "6-10 years", "10+ years"];
 
@@ -39,28 +40,31 @@ export default function CareerPage() {
     }
   };
 
-  const formatText = (text: string) => {
-    return text.split("\n").map((line, i) => {
-      if (line.startsWith("## "))
-        return <h3 key={i} style={{ color: "var(--text-primary)", margin: "20px 0 8px", borderBottom: "1px solid var(--border-subtle)", paddingBottom: 8 }}>{line.slice(3)}</h3>;
-      if (line.startsWith("### "))
-        return <h4 key={i} style={{ color: "var(--text-accent)", margin: "14px 0 6px" }}>{line.slice(4)}</h4>;
-      if (line.startsWith("- ") || line.startsWith("• ")) {
-        const formatted = line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
-            <span style={{ color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />
-          </div>
-        );
-      }
-      if (line.toLowerCase().includes("low risk") || line.toLowerCase().includes("automation risk: low")) return <p key={i} style={{ color: "var(--brand-success)", fontWeight: 600, marginBottom: 6 }}>{line}</p>;
-      if (line.toLowerCase().includes("high risk") || line.toLowerCase().includes("automation risk: high")) return <p key={i} style={{ color: "var(--brand-danger)", fontWeight: 600, marginBottom: 6 }}>{line}</p>;
-      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
-      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
-      return <p key={i} style={{ marginBottom: 6, color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />;
+  const formatText = (text: string) =>
+    renderMarkdown(text, {
+      h3Style: {
+        borderBottom: "1px solid var(--border-subtle)",
+        paddingBottom: 8,
+      },
+      renderLine: (line) => {
+        const lower = line.toLowerCase();
+        if (lower.includes("low risk") || lower.includes("automation risk: low")) {
+          return (
+            <p style={{ color: "var(--brand-success)", fontWeight: 600, marginBottom: 6 }}>
+              {renderInline(line)}
+            </p>
+          );
+        }
+        if (lower.includes("high risk") || lower.includes("automation risk: high")) {
+          return (
+            <p style={{ color: "var(--brand-danger)", fontWeight: 600, marginBottom: 6 }}>
+              {renderInline(line)}
+            </p>
+          );
+        }
+        return null;
+      },
     });
-  };
 
   return (
     <AppShell>

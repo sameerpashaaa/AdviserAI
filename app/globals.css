@@ -739,3 +739,60 @@ textarea.input { resize: vertical; min-height: 100px; height: auto; line-height:
   border-color: var(--glass-border);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Mobile Sidebar Drawer (App Shell)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.app-shell__mobile-toggle {
+  display: none; /* shown only on mobile via media query below */
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200; /* above sidebar (100) and overlay (150) */
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.app-shell__overlay {
+  display: none; /* shown only on mobile */
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 768px) {
+  .app-shell__mobile-toggle {
+    display: flex;
+  }
+  .app-shell__overlay {
+    display: block;
+  }
+
+  .sidebar--open {
+    transform: translateX(0) !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Accessibility — Reduced Motion
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Product", href: "#compare-features" },
   { label: "Pricing", href: "#pricing" },
   { label: "Research", href: "/research" },
-  { label: "About", href: "#" },
 ];
 
 export default function Navbar() {

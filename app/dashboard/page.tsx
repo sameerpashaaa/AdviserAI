@@ -3,6 +3,7 @@
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import Link from "next/link";
+import { useMemo } from "react";
 import {
   ArrowRight,
   Activity,
@@ -11,13 +12,19 @@ import {
   FileText,
 } from "lucide-react";
 import { AGENTS } from "@/lib/agents/types";
+import { readStorage, STORAGE_KEYS } from "@/lib/storage";
 
-const stats = [
-  { label: "Analyses Run", value: "24", change: "+8 this week", up: true, icon: Activity },
-  { label: "Reports Generated", value: "7", change: "+3 this week", up: true, icon: FileText },
-  { label: "Avg. Response Time", value: "12s", change: "-3s vs. last week", up: true, icon: Clock },
-  { label: "Insights Saved", value: "41", change: "+12 this week", up: true, icon: Star },
-];
+type StoredReport = {
+  id: string;
+  title: string;
+  type: string;
+  date: string;
+  icon: string;
+  status: string;
+  size: string;
+  badge: string;
+  summary: string;
+};
 
 const quickActions = [
   {
@@ -76,14 +83,29 @@ const quickActions = [
   },
 ];
 
-const recentSessions = [
-  { type: "research", title: "AI Consulting Market Analysis", time: "2h ago", icon: "🔬", result: "Completed" },
-  { type: "strategy", title: "SWOT Analysis — SaaS Platform", time: "5h ago", icon: "🎯", result: "Completed" },
-  { type: "validate", title: "EdTech Startup Validation", time: "Yesterday", icon: "🚀", result: "Score: 72/100" },
-  { type: "trends", title: "Healthcare AI Trends", time: "2 days ago", icon: "📈", result: "8 trends found" },
-];
-
 export default function DashboardPage() {
+  const reports = readStorage<StoredReport[]>(STORAGE_KEYS.reports, []);
+
+  const stats = useMemo(() => {
+    const analysesRun = Math.max(reports.length, 1);
+    const reportsGenerated = reports.length;
+    const insightsSaved = reports.reduce((sum, report) => sum + Math.max(1, Math.ceil(report.summary.length / 180)), 0);
+
+    return [
+      { label: "Analyses Run", value: String(analysesRun), change: reports.length ? "Saved in local workspace" : "Run your first analysis", up: true, icon: Activity },
+      { label: "Reports Generated", value: String(reportsGenerated), change: reports.length ? "Persisted locally" : "No reports yet", up: true, icon: FileText },
+      { label: "Avg. Response Time", value: "12s", change: "Telemetry not wired yet", up: true, icon: Clock },
+      { label: "Insights Saved", value: String(insightsSaved), change: reports.length ? "Derived from saved reports" : "No saved insights yet", up: true, icon: Star },
+    ];
+  }, [reports]);
+
+  const recentSessions = reports.slice(0, 4).map((report) => ({
+    title: report.title,
+    time: report.date,
+    icon: report.icon,
+    result: report.status,
+  }));
+
   return (
     <AppShell>
       <Header
@@ -181,7 +203,7 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {recentSessions.map((s, i) => (
+              {recentSessions.length > 0 ? recentSessions.map((s, i) => (
                 <div
                   key={i}
                   className="session-item"
@@ -214,7 +236,13 @@ export default function DashboardPage() {
                   </div>
                   <ArrowRight size={14} color="var(--text-muted)" />
                 </div>
-              ))}
+              )) : (
+                <div className="card" style={{ padding: 20 }}>
+                  <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+                    No saved analyses yet. Run your first query in Chief Adviser to populate this area.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

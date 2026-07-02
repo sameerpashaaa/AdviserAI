@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import { Brain, Send, Sparkles, RefreshCw, Copy } from "lucide-react";
 import { AGENTS } from "@/lib/agents/types";
 import { formatMarkdown } from "@/lib/formatMarkdown";
+import { STORAGE_KEYS, readStorage, writeStorage } from "@/lib/storage";
 
 interface Message {
   id: string;
@@ -13,6 +14,22 @@ interface Message {
   content: string;
   timestamp: Date;
   activeAgents?: string[];
+}
+
+interface PersistedMessage extends Omit<Message, "timestamp"> {
+  timestamp: string;
+}
+
+interface StoredReport {
+  id: string;
+  title: string;
+  type: string;
+  date: string;
+  icon: string;
+  status: string;
+  size: string;
+  badge: string;
+  summary: string;
 }
 
 const STARTER_PROMPTS = [
@@ -24,17 +41,66 @@ const STARTER_PROMPTS = [
   "What market trends should I be tracking in 2026?",
 ];
 
+const WELCOME_MESSAGE: Message = {
+  id: "welcome",
+  role: "assistant",
+  content:
+    "## Welcome to Adviser AI 🎯\n\nI'm your Chief Adviser — backed by 10 specialized AI agents covering research, market intelligence, strategy, finance, risk, and more.\n\n**What can I help you with today?**\n\n- 📊 **Market Analysis** — TAM/SAM/SOM, competitive landscape\n- 🎯 **Strategy** — SWOT, PESTLE, Porter's Five Forces\n- 🚀 **Startup Advice** — idea validation, GTM, fundraising\n- 💰 **Financial Modeling** — projections, unit economics\n- ⚠️ **Risk Assessment** — comprehensive risk registry\n- 📈 **Trend Intelligence** — emerging opportunities\n\nJust ask me anything — I'll route your question to the right expert agents.",
+  timestamp: new Date(),
+  activeAgents: [],
+};
+
+function serializeMessages(messages: Message[]): PersistedMessage[] {
+  return messages.map((message) => ({
+    ...message,
+    timestamp: message.timestamp.toISOString(),
+  }));
+}
+
+function deserializeMessages(messages: PersistedMessage[] | null): Message[] {
+  if (!messages || messages.length === 0) return [WELCOME_MESSAGE];
+
+  return messages.map((message) => ({
+    ...message,
+    timestamp: new Date(message.timestamp),
+  }));
+}
+
+function guessReportMeta(message: string, agents: string[]) {
+  const lower = message.toLowerCase();
+
+  if (lower.includes("trend")) return { type: "Trends", icon: "📈", badge: "badge-warning" };
+  if (lower.includes("career")) return { type: "Career", icon: "🎓", badge: "badge-neutral" };
+  if (lower.includes("validate") || lower.includes("idea")) return { type: "Validation", icon: "🚀", badge: "badge-success" };
+  if (lower.includes("research") || agents.includes("research")) return { type: "Research", icon: "🔬", badge: "badge-cyan" };
+
+  return { type: "Strategy", icon: "🎯", badge: "badge-primary" };
+}
+
+function saveGeneratedReport(message: string, response: string, agents: string[]) {
+  const existing = readStorage<StoredReport[]>(STORAGE_KEYS.reports, []);
+  const meta = guessReportMeta(message, agents);
+  const title = `${message.trim().slice(0, 48)}${message.trim().length > 48 ? "…" : ""}`;
+
+  const nextReport: StoredReport = {
+    id: `report-${Date.now()}`,
+    title,
+    type: meta.type,
+    date: new Date().toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }),
+    icon: meta.icon,
+    status: "Complete",
+    size: `${Math.max(4, Math.min(20, Math.ceil(response.length / 320)))} pages`,
+    badge: meta.badge,
+    summary: response.slice(0, 240),
+  };
+
+  writeStorage(STORAGE_KEYS.reports, [nextReport, ...existing].slice(0, 24));
+}
+
 export default function AdviserPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "## Welcome to Adviser AI 🎯\n\nI'm your Chief Adviser — backed by 10 specialized AI agents covering research, market intelligence, strategy, finance, risk, and more.\n\n**What can I help you with today?**\n\n- 📊 **Market Analysis** — TAM/SAM/SOM, competitive landscape\n- 🎯 **Strategy** — SWOT, PESTLE, Porter's Five Forces\n- 🚀 **Startup Advice** — idea validation, GTM, fundraising\n- 💰 **Financial Modeling** — projections, unit economics\n- ⚠️ **Risk Assessment** — comprehensive risk registry\n- 📈 **Trend Intelligence** — emerging opportunities\n\nJust ask me anything — I'll route your question to the right expert agents.",
-      timestamp: new Date(),
-      activeAgents: [],
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() =>
+    deserializeMessages(readStorage<PersistedMessage[] | null>(STORAGE_KEYS.chatMessages, null))
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeAgents, setActiveAgents] = useState<string[]>([]);
@@ -43,6 +109,10 @@ export default function AdviserPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.chatMessages, serializeMessages(messages));
   }, [messages]);
 
   const handleSend = async () => {
@@ -91,6 +161,7 @@ export default function AdviserPage() {
       };
 
       setMessages((prev) => [...prev, aiMsg]);
+      saveGeneratedReport(userMsg.content, data.response, data.agents || []);
     } catch {
       const errMsg: Message = {
         id: (Date.now() + 1).toString(),

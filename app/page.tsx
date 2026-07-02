@@ -117,6 +117,7 @@ const pricing = [
       "Email support",
     ],
     cta: "Start Free Trial",
+    href: "/dashboard",
     featured: false,
   },
   {
@@ -135,6 +136,7 @@ const pricing = [
       "Priority support",
     ],
     cta: "Start Free Trial",
+    href: "/dashboard",
     featured: true,
   },
   {
@@ -153,13 +155,14 @@ const pricing = [
       "Custom integrations",
     ],
     cta: "Contact Sales",
+    href: "mailto:sales@adviserai.example?subject=Enterprise%20Plan%20Inquiry",
     featured: false,
   },
 ];
 
 const stats = [
   { value: "10", label: "Specialized AI Agents", icon: Brain },
-  { value: "23.7%", label: "Market CAGR 2024–2032", icon: TrendingUp },
+  { value: "24.1%", label: "Market CAGR 2024–2032", icon: TrendingUp },
   { value: "$49B", label: "Addressable Market by 2032", icon: Globe },
   { value: "80%", label: "Time Saved vs. Consulting", icon: Zap },
 ];
@@ -465,7 +468,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Competitor Matrix ── */}
-      <section className="section">
+      <section id="compare-features" className="section">
         <div className="container">
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <div className="badge badge-cyan" style={{ marginBottom: 16 }}>

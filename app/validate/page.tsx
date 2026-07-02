@@ -4,6 +4,7 @@ import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import { Zap, RefreshCw, Copy } from "lucide-react";
+import { renderMarkdown } from "@/lib/safeMarkdown";
 
 const BUSINESS_MODELS = [
   "SaaS / Subscription", "Marketplace", "E-commerce / DTC", "Freemium",
@@ -43,29 +44,19 @@ export default function ValidatePage() {
     }
   };
 
-  const formatText = (text: string) => {
-    return text.split("\n").map((line, i) => {
-      if (line.startsWith("## "))
-        return <h3 key={i} style={{ color: "var(--text-primary)", margin: "20px 0 8px", borderBottom: "1px solid var(--border-subtle)", paddingBottom: 8 }}>{line.slice(3)}</h3>;
-      if (line.startsWith("### "))
-        return <h4 key={i} style={{ color: "var(--text-accent)", margin: "14px 0 6px" }}>{line.slice(4)}</h4>;
-      if (line.startsWith("- ") || line.startsWith("• ")) {
-        const formatted = line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
-            <span style={{ color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />
-          </div>
-        );
-      }
-      if (line.includes("STRONG PROCEED")) return <div key={i} className="badge badge-success" style={{ margin: "8px 0", fontSize: "0.9rem", padding: "6px 16px" }}>✅ {line}</div>;
-      if (line.includes("PROCEED WITH CAUTION")) return <div key={i} className="badge badge-warning" style={{ margin: "8px 0", fontSize: "0.9rem", padding: "6px 16px" }}>⚠️ {line}</div>;
-      if (line.includes("PIVOT RECOMMENDED") || line.includes("DO NOT PROCEED")) return <div key={i} className="badge badge-danger" style={{ margin: "8px 0", fontSize: "0.9rem", padding: "6px 16px" }}>🚫 {line}</div>;
-      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
-      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
-      return <p key={i} style={{ marginBottom: 6, color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />;
+  const formatText = (text: string) =>
+    renderMarkdown(text, {
+      h3Style: {
+        borderBottom: "1px solid var(--border-subtle)",
+        paddingBottom: 8,
+      },
+      lineBadge: {
+        "STRONG PROCEED": "badge badge-success",
+        "PROCEED WITH CAUTION": "badge badge-warning",
+        "PIVOT RECOMMENDED": "badge badge-danger",
+        "DO NOT PROCEED": "badge badge-danger",
+      },
     });
-  };
 
   return (
     <AppShell>

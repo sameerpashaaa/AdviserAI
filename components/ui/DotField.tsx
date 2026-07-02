@@ -68,12 +68,14 @@ const DotField = memo(
     const mouseRef = useRef({
       x: -9999,
       y: -9999,
+      clientX: -9999,
+      clientY: -9999,
       prevX: -9999,
       prevY: -9999,
       speed: 0,
     });
     const rafRef = useRef<number | null>(null);
-    const sizeRef = useRef({ w: 0, h: 0, offsetX: 0, offsetY: 0 });
+    const sizeRef = useRef({ w: 0, h: 0, rectLeft: 0, rectTop: 0 });
     const glowOpacity = useRef(0);
     const engagement = useRef(0);
     const propsRef = useRef<DotFieldInternalProps>({
@@ -133,8 +135,8 @@ const DotField = memo(
         sizeRef.current = {
           w,
           h,
-          offsetX: rect.left + window.scrollX,
-          offsetY: rect.top + window.scrollY,
+          rectLeft: rect.left,
+          rectTop: rect.top,
         };
 
         buildDots(w, h);
@@ -162,8 +164,24 @@ const DotField = memo(
 
       function onMouseMove(e: MouseEvent) {
         const s = sizeRef.current;
-        mouseRef.current.x = e.pageX - s.offsetX;
-        mouseRef.current.y = e.pageY - s.offsetY;
+        mouseRef.current.clientX = e.clientX;
+        mouseRef.current.clientY = e.clientY;
+        mouseRef.current.x = e.clientX - s.rectLeft;
+        mouseRef.current.y = e.clientY - s.rectTop;
+      }
+
+      function handleScroll() {
+        if (!canvas || !canvas.parentElement) return;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const s = sizeRef.current;
+        s.rectLeft = rect.left;
+        s.rectTop = rect.top;
+
+        const m = mouseRef.current;
+        if (m.clientX !== -9999) {
+          m.x = m.clientX - s.rectLeft;
+          m.y = m.clientY - s.rectTop;
+        }
       }
 
       function updateMouseSpeed() {
@@ -282,6 +300,7 @@ const DotField = memo(
 
       doResize();
       window.addEventListener("resize", resize);
+      window.addEventListener("scroll", handleScroll, { passive: true });
       window.addEventListener("mousemove", onMouseMove, { passive: true });
       rafRef.current = requestAnimationFrame(tick);
 
@@ -295,6 +314,7 @@ const DotField = memo(
         clearInterval(speedInterval);
         clearTimeout(resizeTimer);
         window.removeEventListener("resize", resize);
+        window.removeEventListener("scroll", handleScroll);
         window.removeEventListener("mousemove", onMouseMove);
       };
     }, []);

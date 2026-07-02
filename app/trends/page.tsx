@@ -4,6 +4,7 @@ import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import { TrendingUp, RefreshCw, Copy, Globe } from "lucide-react";
+import { renderMarkdown, renderInline } from "@/lib/safeMarkdown";
 
 const INDUSTRIES = [
   "Artificial Intelligence", "FinTech", "HealthTech", "EdTech", "CleanTech",
@@ -44,30 +45,30 @@ export default function TrendsPage() {
     }
   };
 
-  const formatText = (text: string) => {
-    return text.split("\n").map((line, i) => {
-      if (line.startsWith("## "))
-        return <h3 key={i} style={{ color: "var(--text-primary)", margin: "20px 0 8px", borderBottom: "1px solid var(--border-subtle)", paddingBottom: 8 }}>{line.slice(3)}</h3>;
-      if (line.startsWith("### "))
-        return <h4 key={i} style={{ color: "var(--text-accent)", margin: "14px 0 6px" }}>{line.slice(4)}</h4>;
-      if (line.startsWith("- ") || line.startsWith("• ")) {
-        const formatted = line.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return (
-          <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--text-accent)", flexShrink: 0 }}>•</span>
-            <span style={{ color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />
-          </div>
-        );
-      }
-      if (line.toLowerCase().includes("emerging")) {
-        const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
-        return <p key={i} style={{ marginBottom: 6, color: "var(--text-secondary)", borderLeft: "3px solid var(--brand-success)", paddingLeft: 12 }} dangerouslySetInnerHTML={{ __html: formatted }} />;
-      }
-      if (line.trim() === "") return <div key={i} style={{ height: 8 }} />;
-      const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:600">$1</strong>');
-      return <p key={i} style={{ marginBottom: 6, color: "var(--text-secondary)" }} dangerouslySetInnerHTML={{ __html: formatted }} />;
+  const formatText = (text: string) =>
+    renderMarkdown(text, {
+      h3Style: {
+        borderBottom: "1px solid var(--border-subtle)",
+        paddingBottom: 8,
+      },
+      renderLine: (line) => {
+        if (line.toLowerCase().includes("emerging")) {
+          return (
+            <p
+              style={{
+                marginBottom: 6,
+                color: "var(--text-secondary)",
+                borderLeft: "3px solid var(--brand-success)",
+                paddingLeft: 12,
+              }}
+            >
+              {renderInline(line)}
+            </p>
+          );
+        }
+        return null;
+      },
     });
-  };
 
   return (
     <AppShell>
