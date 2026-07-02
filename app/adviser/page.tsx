@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import { Brain, Send, Sparkles, RefreshCw, Copy } from "lucide-react";
 import { AGENTS } from "@/lib/agents/types";
 import { formatMarkdown } from "@/lib/formatMarkdown";
+import { useRouter } from "next/navigation";
 import { STORAGE_KEYS, readStorage, writeStorage } from "@/lib/storage";
 
 interface Message {
@@ -18,18 +19,6 @@ interface Message {
 
 interface PersistedMessage extends Omit<Message, "timestamp"> {
   timestamp: string;
-}
-
-interface StoredReport {
-  id: string;
-  title: string;
-  type: string;
-  date: string;
-  icon: string;
-  status: string;
-  size: string;
-  badge: string;
-  summary: string;
 }
 
 const STARTER_PROMPTS = [
@@ -66,38 +55,9 @@ function deserializeMessages(messages: PersistedMessage[] | null): Message[] {
   }));
 }
 
-function guessReportMeta(message: string, agents: string[]) {
-  const lower = message.toLowerCase();
-
-  if (lower.includes("trend")) return { type: "Trends", icon: "📈", badge: "badge-warning" };
-  if (lower.includes("career")) return { type: "Career", icon: "🎓", badge: "badge-neutral" };
-  if (lower.includes("validate") || lower.includes("idea")) return { type: "Validation", icon: "🚀", badge: "badge-success" };
-  if (lower.includes("research") || agents.includes("research")) return { type: "Research", icon: "🔬", badge: "badge-cyan" };
-
-  return { type: "Strategy", icon: "🎯", badge: "badge-primary" };
-}
-
-function saveGeneratedReport(message: string, response: string, agents: string[]) {
-  const existing = readStorage<StoredReport[]>(STORAGE_KEYS.reports, []);
-  const meta = guessReportMeta(message, agents);
-  const title = `${message.trim().slice(0, 48)}${message.trim().length > 48 ? "…" : ""}`;
-
-  const nextReport: StoredReport = {
-    id: `report-${Date.now()}`,
-    title,
-    type: meta.type,
-    date: new Date().toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }),
-    icon: meta.icon,
-    status: "Complete",
-    size: `${Math.max(4, Math.min(20, Math.ceil(response.length / 320)))} pages`,
-    badge: meta.badge,
-    summary: response.slice(0, 240),
-  };
-
-  writeStorage(STORAGE_KEYS.reports, [nextReport, ...existing].slice(0, 24));
-}
-
 export default function AdviserPage() {
+  const router = useRouter();
+  const conversationIdRef = useRef<string | null>(null);
   const [messages, setMessages] = useState<Message[]>(() =>
     deserializeMessages(readStorage<PersistedMessage[] | null>(STORAGE_KEYS.chatMessages, null))
   );
@@ -112,8 +72,29 @@ export default function AdviserPage() {
   }, [messages]);
 
   useEffect(() => {
-    writeStorage(STORAGE_KEYS.chatMessages, serializeMessages(messages));
-  }, [messages]);
+    const loadConversation = async () => {
+      const response = await fetch("/api/adviser");
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (data.conversation?.id) {
+        conversationIdRef.current = data.conversation.id;
+      }
+
+      if (Array.isArray(data.messages) && data.messages.length > 0) {
+        const hydrated = data.messages.map((message: any) => ({
+          id: message.id,
+          role: message.role,
+          content: message.content,
+          timestamp: new Date(message.createdAt),
+          activeAgents: message.activeAgents ?? [],
+        }));
+        setMessages([WELCOME_MESSAGE, ...hydrated.filter((message: Message) => message.id !== WELCOME_MESSAGE.id)]);
+      }
+    };
+
+    void loadConversation();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -143,7 +124,11 @@ export default function AdviserPage() {
       const res = await fetch("/api/adviser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg.content, history }),
+        body: JSON.stringify({
+          message: userMsg.content,
+          history,
+          conversationId: conversationIdRef.current ?? undefined,
+        }),
       });
 
       const data = await res.json();
@@ -161,7 +146,10 @@ export default function AdviserPage() {
       };
 
       setMessages((prev) => [...prev, aiMsg]);
-      saveGeneratedReport(userMsg.content, data.response, data.agents || []);
+      if (data.conversationId) {
+        conversationIdRef.current = data.conversationId;
+      }
+      router.refresh();
     } catch {
       const errMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -219,7 +207,8 @@ export default function AdviserPage() {
           actions={
             <button
               className="btn btn-ghost btn-sm"
-              onClick={() =>
+              onClick={() => {
+                conversationIdRef.current = null;
                 setMessages([
                   {
                     id: "welcome-new",
@@ -227,8 +216,9 @@ export default function AdviserPage() {
                     content: "New session started. How can I help you?",
                     timestamp: new Date(),
                   },
-                ])
-              }
+                ]);
+                router.refresh();
+              }}
             >
               <RefreshCw size={14} /> New Session
             </button>

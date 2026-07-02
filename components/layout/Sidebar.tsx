@@ -14,6 +14,7 @@ import {
   Settings,
   Zap,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -123,6 +124,15 @@ export default function Sidebar({ open = false, onClose }: SidebarProps) {
             <Settings size={16} className="nav-item-icon" />
             Settings
           </Link>
+          <a
+            href="/auth/logout"
+            className="nav-item"
+            onClick={handleNav}
+            style={{ color: "var(--brand-danger, #ef4444)" }}
+          >
+            <LogOut size={16} className="nav-item-icon" />
+            Logout
+          </a>
         </nav>
 
         {/* Usage indicator */}

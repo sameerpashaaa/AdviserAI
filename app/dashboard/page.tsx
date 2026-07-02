@@ -3,7 +3,7 @@
 import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Activity,
@@ -12,19 +12,6 @@ import {
   FileText,
 } from "lucide-react";
 import { AGENTS } from "@/lib/agents/types";
-import { readStorage, STORAGE_KEYS } from "@/lib/storage";
-
-type StoredReport = {
-  id: string;
-  title: string;
-  type: string;
-  date: string;
-  icon: string;
-  status: string;
-  size: string;
-  badge: string;
-  summary: string;
-};
 
 const quickActions = [
   {
@@ -84,20 +71,59 @@ const quickActions = [
 ];
 
 export default function DashboardPage() {
-  const reports = readStorage<StoredReport[]>(STORAGE_KEYS.reports, []);
+  const [reports, setReports] = useState<Array<{ title: string; date: string; icon: string; status: string; summary: string }>>([]);
+  const [metrics, setMetrics] = useState<{ conversationCount: number; reportCount: number; usageCount: number } | null>(null);
+
+  const toReportCard = (report: any) => ({
+    title: report.title,
+    date: new Date(report.createdAt).toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }),
+    icon:
+      report.type === "Research"
+        ? "🔬"
+        : report.type === "Trends"
+          ? "📈"
+          : report.type === "Career"
+            ? "🎓"
+            : report.type === "Validation"
+              ? "🚀"
+              : "🎯",
+    status: report.status,
+    summary: report.summary,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      const [reportsResponse, metricsResponse] = await Promise.all([
+        fetch("/api/reports"),
+        fetch("/api/dashboard"),
+      ]);
+
+      if (reportsResponse.ok) {
+        const reportsData = await reportsResponse.json();
+        setReports((reportsData.reports ?? []).map(toReportCard));
+      }
+
+      if (metricsResponse.ok) {
+        const metricsData = await metricsResponse.json();
+        setMetrics(metricsData.metrics ?? null);
+      }
+    };
+
+    void load();
+  }, []);
 
   const stats = useMemo(() => {
-    const analysesRun = Math.max(reports.length, 1);
-    const reportsGenerated = reports.length;
+    const analysesRun = Math.max(metrics?.conversationCount ?? reports.length, 1);
+    const reportsGenerated = metrics?.reportCount ?? reports.length;
     const insightsSaved = reports.reduce((sum, report) => sum + Math.max(1, Math.ceil(report.summary.length / 180)), 0);
 
     return [
-      { label: "Analyses Run", value: String(analysesRun), change: reports.length ? "Saved in local workspace" : "Run your first analysis", up: true, icon: Activity },
-      { label: "Reports Generated", value: String(reportsGenerated), change: reports.length ? "Persisted locally" : "No reports yet", up: true, icon: FileText },
-      { label: "Avg. Response Time", value: "12s", change: "Telemetry not wired yet", up: true, icon: Clock },
+      { label: "Analyses Run", value: String(analysesRun), change: reports.length ? "Saved in your workspace" : "Run your first analysis", up: true, icon: Activity },
+      { label: "Reports Generated", value: String(reportsGenerated), change: reports.length ? "Persisted in Postgres" : "No reports yet", up: true, icon: FileText },
+      { label: "Avg. Response Time", value: "12s", change: metrics?.usageCount ? "Usage tracked server-side" : "Telemetry not wired yet", up: true, icon: Clock },
       { label: "Insights Saved", value: String(insightsSaved), change: reports.length ? "Derived from saved reports" : "No saved insights yet", up: true, icon: Star },
     ];
-  }, [reports]);
+  }, [metrics, reports]);
 
   const recentSessions = reports.slice(0, 4).map((report) => ({
     title: report.title,

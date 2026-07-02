@@ -4,8 +4,7 @@ import AppShell from "@/components/layout/AppShell";
 import Header from "@/components/layout/Header";
 import { FileText, Download, Search, Clock, Plus } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { readStorage, STORAGE_KEYS } from "@/lib/storage";
+import { useEffect, useMemo, useState } from "react";
 
 const TYPE_FILTERS = ["All", "Research", "Strategy", "Validation", "Trends", "Career"];
 
@@ -37,7 +36,28 @@ function downloadReport(report: StoredReport) {
 export default function ReportsPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
-  const reports = readStorage<StoredReport[]>(STORAGE_KEYS.reports, []);
+  const [reports, setReports] = useState<StoredReport[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const response = await fetch("/api/reports");
+      if (!response.ok) return;
+      const data = await response.json();
+      setReports((data.reports ?? []).map((report: any) => ({
+        id: report.id,
+        title: report.title,
+        type: report.type,
+        date: new Date(report.createdAt).toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" }),
+        icon: report.type === "Research" ? "🔬" : report.type === "Trends" ? "📈" : report.type === "Career" ? "🎓" : report.type === "Validation" ? "🚀" : "🎯",
+        status: report.status,
+        size: report.sizeLabel ?? "0 pages",
+        badge: report.badge ?? "badge-primary",
+        summary: report.summary,
+      })));
+    };
+
+    void load();
+  }, []);
 
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {

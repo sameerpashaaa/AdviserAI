@@ -10,6 +10,7 @@ const messageSchema = z.object({
 export const adviserSchema = z.object({
   message: z.string().trim().min(1).max(4000),
   history: z.array(messageSchema).max(20).optional(),
+  conversationId: z.string().uuid().optional(),
 });
 
 export type AdviserInput = z.infer<typeof adviserSchema>;

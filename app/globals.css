@@ -796,3 +796,9 @@ textarea.input { resize: vertical; min-height: 100px; height: auto; line-height:
   }
 }
 
+
+
+/* Dropdown hover effects */
+.dropdown-hover:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
