@@ -71,7 +71,7 @@ const TYPE_STYLES: Record<ToastType, { bg: string; border: string; icon: string;
 function ToastItem({ toast: t, dismiss }: { toast: Toast; dismiss: (id: string) => void }) {
   const styles = TYPE_STYLES[t.type];
   const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     // Animate in
