@@ -131,24 +131,92 @@ export default function AdviserPage() {
         }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Request failed");
-
-      setActiveAgents(data.agents || []);
-
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.response,
-        timestamp: new Date(),
-        activeAgents: data.agents,
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
-      if (data.conversationId) {
-        conversationIdRef.current = data.conversationId;
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Request failed");
       }
+
+      const contentType = res.headers.get("content-type") || "";
+      if (contentType.includes("text/event-stream")) {
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        if (!reader) throw new Error("Response body is not readable");
+
+        const aiMsgId = (Date.now() + 1).toString();
+        // Insert empty assistant message that will be populated
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: aiMsgId,
+            role: "assistant",
+            content: "",
+            timestamp: new Date(),
+            activeAgents: [],
+          },
+        ]);
+
+        let accumulated = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(trimmed.slice(6));
+
+                if (data.error) {
+                  throw new Error(data.error);
+                }
+
+                if (data.agents) {
+                  setActiveAgents(data.agents);
+                  setMessages((prev) =>
+                    prev.map((m) => (m.id === aiMsgId ? { ...m, activeAgents: data.agents } : m))
+                  );
+                }
+
+                if (data.token) {
+                  accumulated += data.token;
+                  setMessages((prev) =>
+                    prev.map((m) => (m.id === aiMsgId ? { ...m, content: accumulated } : m))
+                  );
+                }
+
+                if (data.conversationId) {
+                  conversationIdRef.current = data.conversationId;
+                }
+
+                if (data.done) {
+                  // Final chunk
+                }
+              } catch {
+                // Ignore partial JSON parsing errors
+              }
+            }
+          }
+        }
+      } else {
+        const data = await res.json();
+        setActiveAgents(data.agents || []);
+        const aiMsg: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.response,
+          timestamp: new Date(),
+          activeAgents: data.agents,
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        if (data.conversationId) {
+          conversationIdRef.current = data.conversationId;
+        }
+      }
+
       router.refresh();
     } catch {
       const errMsg: Message = {
@@ -303,6 +371,26 @@ export default function AdviserPage() {
                   msg.content
                 )}
               </div>
+
+              {msg.role === "assistant" && msg.id !== "welcome" && (
+                <div
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "var(--text-muted)",
+                    padding: "4px 8px",
+                    borderLeft: "2px solid var(--border-subtle)",
+                    marginTop: 2,
+                    marginBottom: 6,
+                    maxWidth: "90%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Sparkles size={11} style={{ color: "var(--text-accent)" }} />
+                  <span>Adviser AI can make mistakes. Verify strategic plans before implementation.</span>
+                </div>
+              )}
 
               {msg.role === "assistant" && msg.id !== "welcome" && (
                 <button

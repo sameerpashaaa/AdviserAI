@@ -15,6 +15,7 @@ const settingsSchema = z.object({
   analysisDepth: z.enum(["Standard", "Deep"]),
   responseFormat: z.enum(["Structured (Recommended)", "Narrative", "Bullet Points"]),
   language: z.enum(["English", "Spanish", "French", "German"]),
+  theme: z.enum(["light", "dark"]),
   emailDigestEnabled: z.boolean(),
   trendAlertsEnabled: z.boolean(),
   creditWarningsEnabled: z.boolean(),
@@ -70,6 +71,7 @@ const postHandler = async (body: z.infer<typeof settingsSchema>) => {
     analysisDepth: body.analysisDepth,
     responseFormat: body.responseFormat,
     language: body.language,
+    theme: body.theme,
     updatedAt: new Date(),
   };
 

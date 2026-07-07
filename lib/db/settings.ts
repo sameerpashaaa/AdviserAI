@@ -11,6 +11,7 @@ export type SettingsPayload = {
   analysisDepth: string;
   responseFormat: string;
   language: string;
+  theme: string;
   emailDigestEnabled: boolean;
   trendAlertsEnabled: boolean;
   creditWarningsEnabled: boolean;
@@ -20,13 +21,14 @@ export const DEMO_USER_EMAIL = "demo@adviserai.local";
 
 export const DEFAULT_SETTINGS: SettingsPayload = {
   apiKey: "",
-  fullName: "Sameer Pasha",
+  fullName: "",
   email: "",
   company: "",
   role: "",
   analysisDepth: "Standard",
   responseFormat: "Structured (Recommended)",
   language: "English",
+  theme: "dark",
   emailDigestEnabled: true,
   trendAlertsEnabled: true,
   creditWarningsEnabled: true,
@@ -74,6 +76,7 @@ export async function getDemoSettings() {
       analysisDepth: DEFAULT_SETTINGS.analysisDepth,
       responseFormat: DEFAULT_SETTINGS.responseFormat,
       language: DEFAULT_SETTINGS.language,
+      theme: DEFAULT_SETTINGS.theme,
     })
     .returning();
 
@@ -100,6 +103,7 @@ export async function saveDemoSettings(payload: SettingsPayload): Promise<UserSe
         analysisDepth: payload.analysisDepth,
         responseFormat: payload.responseFormat,
         language: payload.language,
+        theme: payload.theme,
         updatedAt: new Date(),
       })
       .where(eq(userSettings.userId, user.id))
@@ -122,6 +126,7 @@ export async function saveDemoSettings(payload: SettingsPayload): Promise<UserSe
       analysisDepth: payload.analysisDepth,
       responseFormat: payload.responseFormat,
       language: payload.language,
+      theme: payload.theme,
     })
     .returning();
 

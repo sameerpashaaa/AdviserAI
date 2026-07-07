@@ -1,4 +1,4 @@
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count, sql, and, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import {
   conversations,
@@ -56,12 +56,20 @@ export async function getUserWorkspaces(userId: string): Promise<Workspace[]> {
 
 export async function getWorkspaceConversations(workspaceId: string): Promise<Conversation[]> {
   const db = getDb();
-  return db.select().from(conversations).where(eq(conversations.workspaceId, workspaceId)).orderBy(desc(conversations.updatedAt));
+  return db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.workspaceId, workspaceId), isNull(conversations.deletedAt)))
+    .orderBy(desc(conversations.updatedAt));
 }
 
 export async function getConversationForUser(conversationId: string, userId: string): Promise<Conversation | null> {
   const db = getDb();
-  const existing = await db.select().from(conversations).where(eq(conversations.id, conversationId)).limit(1);
+  const existing = await db
+    .select()
+    .from(conversations)
+    .where(and(eq(conversations.id, conversationId), isNull(conversations.deletedAt)))
+    .limit(1);
   const conversation = existing[0] ?? null;
 
   if (!conversation || conversation.userId !== userId) return null;
@@ -75,7 +83,11 @@ export async function getConversationMessages(conversationId: string): Promise<M
 
 export async function getUserReports(userId: string): Promise<Report[]> {
   const db = getDb();
-  return db.select().from(reports).where(eq(reports.userId, userId)).orderBy(desc(reports.createdAt));
+  return db
+    .select()
+    .from(reports)
+    .where(and(eq(reports.userId, userId), isNull(reports.deletedAt)))
+    .orderBy(desc(reports.createdAt));
 }
 
 export async function createConversation(input: {

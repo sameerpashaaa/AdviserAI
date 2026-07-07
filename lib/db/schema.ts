@@ -52,6 +52,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
   settings: jsonb("settings").$type<Record<string, unknown>>().notNull().default({}),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => ({
   emailIdx: uniqueIndex("users_email_unique").on(table.email),
 }));
@@ -69,6 +70,7 @@ export const userSettings = pgTable("user_settings", {
   analysisDepth: text("analysis_depth").notNull().default("Standard"),
   responseFormat: text("response_format").notNull().default("Structured (Recommended)"),
   language: text("language").notNull().default("English"),
+  theme: text("theme").notNull().default("dark"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
@@ -86,6 +88,7 @@ export const workspaces = pgTable("workspaces", {
   metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 export const conversations = pgTable("conversations", {
@@ -97,6 +100,7 @@ export const conversations = pgTable("conversations", {
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => ({
   userCreatedIdx: index("conversations_user_created_idx").on(table.userId, table.createdAt),
 }));
@@ -149,6 +153,7 @@ export const reports = pgTable("reports", {
   exportPath: text("export_path"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => ({
   conversationCreatedIdx: index("reports_conversation_created_idx").on(table.conversationId, table.createdAt),
 }));
@@ -199,6 +204,28 @@ export const knowledgeItems = pgTable("knowledge_items", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  action: text("action").notNull(),
+  resourceType: text("resource_type").notNull(),
+  resourceId: uuid("resource_id"),
+  oldValue: jsonb("old_value").$type<Record<string, unknown>>(),
+  newValue: jsonb("new_value").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const featureFlags = pgTable("feature_flags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  enabled: boolean("enabled").notNull().default(true),
+  minimumTier: subscriptionTierEnum("minimum_tier").notNull().default("free"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({
+  nameIdx: uniqueIndex("feature_flags_name_unique").on(table.name),
+}));
+
 export const usersRelations = relations(users, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [users.organizationId],
@@ -212,6 +239,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   conversations: many(conversations),
   usageEvents: many(usageEvents),
   knowledgeItems: many(knowledgeItems),
+  auditLogs: many(auditLogs),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -327,6 +355,13 @@ export const knowledgeItemsRelations = relations(knowledgeItems, ({ one }) => ({
   }),
 }));
 
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [auditLogs.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type Organization = typeof organizations.$inferSelect;
 export type UserSetting = typeof userSettings.$inferSelect;
@@ -338,3 +373,5 @@ export type Report = typeof reports.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type KnowledgeItem = typeof knowledgeItems.$inferSelect;
 export type UsageEvent = typeof usageEvents.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type FeatureFlag = typeof featureFlags.$inferSelect;

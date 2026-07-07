@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ZodSchema, ZodError } from "zod";
 import { rateLimit, getClientKey } from "@/lib/api/rateLimit";
+import { getSessionFromCookiesAsync } from "@/lib/auth";
 
 /**
  * Wraps a POST route handler with:
- *  1. Rate limiting (per IP, configurable).
+ *  1. Rate limiting (per IP, or per user if authenticated).
  *  2. Request body validation via a Zod schema.
  *  3. Standardised error responses (never leaks internal details).
  *  4. Server-side console.error logging.
@@ -14,8 +15,18 @@ export function withHandler<T>(schema: ZodSchema<T>) {
     req: NextRequest,
     handler: (body: T) => Promise<NextResponse>
   ): Promise<NextResponse> => {
-    // ── Rate limit ──────────────────────────────────────────────────────
-    const { ok, remaining, resetAt } = rateLimit(getClientKey(req));
+    // ── Rate limit key (user ID or IP fallback) ───────────────────────────
+    let rateLimitKey = `ip:${getClientKey(req)}`;
+    try {
+      const session = await getSessionFromCookiesAsync();
+      if (session?.userId) {
+        rateLimitKey = `user:${session.userId}`;
+      }
+    } catch {
+      // Ignore session errors at rate-limiting stage
+    }
+
+    const { ok, remaining, resetAt } = await rateLimit(rateLimitKey);
     if (!ok) {
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
