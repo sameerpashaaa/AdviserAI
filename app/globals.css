@@ -802,3 +802,33 @@ textarea.input { resize: vertical; min-height: 100px; height: auto; line-height:
 .dropdown-hover:hover {
   background: rgba(255, 255, 255, 0.05) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Feature Card Custom Styles (Aceternity Grid, Corners, and Glow)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.feature-card-wrapper {
+  --grid-pattern-opacity: 0.15;
+  transition: border-color 300ms ease-out, box-shadow 300ms ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  .feature-card-wrapper {
+    --grid-pattern-opacity: 0.08;
+  }
+}
+
+.dark .feature-card-wrapper {
+  --grid-pattern-opacity: 0.08;
+}
+
+/* Corner plus icon colors at rest vs hover */
+.corner-accent-icon {
+  color: var(--border-strong);
+  transition: color 300ms ease-out;
+}
+
+.feature-card-wrapper:hover .corner-accent-icon {
+  color: var(--card-accent-hover, #7c3aed);
+}
+

@@ -20,18 +20,7 @@ const GradientBackground = dynamic(
   () => import("@/components/ui/GradientBackground"),
   { ssr: false }
 );
-const CardContainer = dynamic(
-  () => import("@/components/ui/3d-card").then((m) => m.CardContainer),
-  { ssr: false, loading: () => <div style={{ minHeight: 280 }} /> }
-);
-const CardBody = dynamic(
-  () => import("@/components/ui/3d-card").then((m) => m.CardBody),
-  { ssr: false }
-);
-const CardItem = dynamic(
-  () => import("@/components/ui/3d-card").then((m) => m.CardItem),
-  { ssr: false }
-);
+import FeatureCard from "@/components/feature-card";
 
 const features = [
   {
@@ -451,35 +440,13 @@ export default function LandingPage() {
           </div>
           <div className="grid-4">
             {features.map((f) => (
-              <CardContainer key={f.title} containerClassName="">
-                <CardBody className="feature-card">
-                  <CardItem
-                    translateZ={40}
-                    style={{ marginBottom: 16, display: "flex" }}
-                  >
-                    <div
-                      className="feature-icon"
-                      style={{ background: f.color, fontSize: "1.5rem", marginBottom: 0 }}
-                    >
-                      {f.icon}
-                    </div>
-                  </CardItem>
-                  <CardItem
-                    translateZ={55}
-                    as="h4"
-                    style={{ marginBottom: 8, color: "var(--text-primary)" }}
-                  >
-                    {f.title}
-                  </CardItem>
-                  <CardItem
-                    translateZ={35}
-                    as="p"
-                    style={{ fontSize: "0.875rem", lineHeight: 1.6 }}
-                  >
-                    {f.desc}
-                  </CardItem>
-                </CardBody>
-              </CardContainer>
+              <FeatureCard
+                key={f.title}
+                icon={f.icon}
+                title={f.title}
+                description={f.desc}
+                iconBgColor={f.color}
+              />
             ))}
           </div>
         </div>
