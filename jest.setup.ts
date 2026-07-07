@@ -33,5 +33,6 @@ process.env.UPSTASH_REDIS_REST_TOKEN =
   process.env.UPSTASH_REDIS_REST_TOKEN ?? "";
 
 // ── Misc ───────────────────────────────────────────────────────────────────
-process.env.NODE_ENV = "test";
+// NODE_ENV is typed read-only in @types/node; cast to allow override in tests.
+(process.env as Record<string, string>).NODE_ENV = "test";
 process.env.NEXT_RUNTIME = "nodejs";

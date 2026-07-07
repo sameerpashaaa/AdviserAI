@@ -39,11 +39,7 @@ const config: Config = {
   // Exclude generated / vendor directories
   testPathIgnorePatterns: ["/node_modules/", "/.next/"],
 
-  // Run setup file after Jest initialises the test framework
-  setupFilesAfterFramework: [], // populated by jest.setup.ts via setupFilesAfterFramework option below
-  setupFilesAfterFramework: undefined as unknown as string[], // ts-jest compat
-
-  // Actually wire up the setup file
+  // Wire up the setup file (runs before each test file, before test framework install)
   setupFiles: ["<rootDir>/jest.setup.ts"],
 
   // ts-jest transformation settings
