@@ -98,6 +98,7 @@ export const conversations = pgTable("conversations", {
   title: text("title").notNull(),
   summary: text("summary"),
   active: boolean("active").notNull().default(true),
+  pinned: boolean("pinned").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -226,6 +227,17 @@ export const featureFlags = pgTable("feature_flags", {
   nameIdx: uniqueIndex("feature_flags_name_unique").on(table.name),
 }));
 
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"),
+  read: boolean("read").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  readAt: timestamp("read_at", { withTimezone: true }),
+});
+
 export const usersRelations = relations(users, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [users.organizationId],
@@ -240,6 +252,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   usageEvents: many(usageEvents),
   knowledgeItems: many(knowledgeItems),
   auditLogs: many(auditLogs),
+  notifications: many(notifications),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -362,6 +375,13 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   }),
 }));
 
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type Organization = typeof organizations.$inferSelect;
 export type UserSetting = typeof userSettings.$inferSelect;
@@ -375,3 +395,4 @@ export type KnowledgeItem = typeof knowledgeItems.$inferSelect;
 export type UsageEvent = typeof usageEvents.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type Notification = typeof notifications.$inferSelect;

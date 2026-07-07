@@ -5,6 +5,7 @@ import { getSessionFromCookiesAsync } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { userSettings, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { sendWelcomeEmail, sendSettingsChangeEmail } from "@/lib/email";
 
 const settingsSchema = z.object({
   apiKey: z.string().max(256),
@@ -34,6 +35,9 @@ async function getOrCreateAuthedUser() {
     name: session.name,
     organizationId: session.organizationId,
   }).returning();
+
+  // Send welcome email in background
+  void sendWelcomeEmail(session.email, session.name || "User");
 
   return inserted[0];
 }
@@ -78,6 +82,9 @@ const postHandler = async (body: z.infer<typeof settingsSchema>) => {
   const settings = existing[0]
     ? await db.update(userSettings).set(payload).where(eq(userSettings.userId, user.id)).returning()
     : await db.insert(userSettings).values(payload).returning();
+
+  // Send settings update confirmation email in background
+  void sendSettingsChangeEmail(user.email, user.name || body.fullName || "User");
 
   return NextResponse.json({ settings: settings[0] });
 };

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /auth/
+
+# Sitemap location
+Sitemap: https://adviserai.com/sitemap.xml

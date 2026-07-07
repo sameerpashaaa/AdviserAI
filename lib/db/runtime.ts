@@ -60,7 +60,7 @@ export async function getWorkspaceConversations(workspaceId: string): Promise<Co
     .select()
     .from(conversations)
     .where(and(eq(conversations.workspaceId, workspaceId), isNull(conversations.deletedAt)))
-    .orderBy(desc(conversations.updatedAt));
+    .orderBy(desc(conversations.pinned), desc(conversations.updatedAt));
 }
 
 export async function getConversationForUser(conversationId: string, userId: string): Promise<Conversation | null> {

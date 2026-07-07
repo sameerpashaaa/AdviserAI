@@ -15,6 +15,13 @@
       "when": 1783423944188,
       "tag": "0001_mature_dreadnoughts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783426763551,
+      "tag": "0002_freezing_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodSchema, ZodError } from "zod";
 import { rateLimit, getClientKey } from "@/lib/api/rateLimit";
 import { getSessionFromCookiesAsync } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 
 /**
  * Wraps a POST route handler with:
@@ -70,13 +71,18 @@ export function withHandler<T>(schema: ZodSchema<T>) {
     }
 
     // ── Business logic ──────────────────────────────────────────────────
+    const routePath = req.nextUrl?.pathname ?? "unknown";
+    const startMs = Date.now();
+    logger.info("[API] Request", { route: routePath, method: req.method, rateLimitKey });
+
     try {
       const res = await handler(parsed);
       // Append rate-limit header to successful responses.
       res.headers.set("X-RateLimit-Remaining", String(remaining));
+      logger.info("[API] Response", { route: routePath, status: res.status, durationMs: Date.now() - startMs });
       return res;
     } catch (err: unknown) {
-      console.error("[API Error]", err);
+      logger.error("[API] Unhandled error", err, { route: routePath, durationMs: Date.now() - startMs });
       return NextResponse.json(
         { error: "Something went wrong. Please try again." },
         {

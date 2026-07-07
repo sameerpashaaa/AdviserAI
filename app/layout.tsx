@@ -1,17 +1,43 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import "./globals.css";
+import CookieBanner from "@/components/ui/CookieBanner";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://adviserai.com"),
   title: "Adviser AI — Elite Strategic Intelligence Platform",
   description:
     "World-class strategic advisory powered by multi-agent AI. Get McKinsey-grade insights, market research, business validation, and expert strategy in minutes.",
   keywords:
-    "AI strategy, business consulting, market research, startup advisor, strategic intelligence",
+    "AI strategy, business consulting, market research, startup advisor, strategic intelligence, SWOT analysis, market analysis",
+  alternates: {
+    canonical: "https://adviserai.com",
+  },
   openGraph: {
     title: "Adviser AI — Elite Strategic Intelligence Platform",
-    description: "Democratizing world-class strategic advisory with AI",
+    description: "Democratizing world-class strategic advisory with AI. McKinsey-grade insights in minutes.",
     type: "website",
+    url: "https://adviserai.com",
+    siteName: "Adviser AI",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Adviser AI — Elite Strategic Intelligence Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Adviser AI — Elite Strategic Intelligence Platform",
+    description: "Democratizing world-class strategic advisory with AI",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
   },
 };
 
@@ -34,7 +60,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }

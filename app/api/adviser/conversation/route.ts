@@ -10,6 +10,11 @@ const renameSchema = z.object({
   title: z.string().trim().min(1).max(256),
 });
 
+const pinSchema = z.object({
+  conversationId: z.string().uuid(),
+  pinned: z.boolean(),
+});
+
 // ── PUT: Rename conversation ────────────────────────────────────────────────
 export async function PUT(req: Request) {
   const session = await getSessionFromCookiesAsync();
@@ -113,5 +118,50 @@ export async function DELETE(req: Request) {
   } catch (err) {
     console.error("[conversation/delete]", err);
     return NextResponse.json({ error: "Failed to delete conversation" }, { status: 500 });
+  }
+}
+
+// ── PATCH: Toggle conversation pinned state ─────────────────────────────────
+export async function PATCH(req: Request) {
+  const session = await getSessionFromCookiesAsync();
+  if (!session) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const db = getDb();
+
+  try {
+    const body = await req.json();
+    const parsed = pinSchema.parse(body);
+
+    // Verify ownership
+    const existing = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.id, parsed.conversationId),
+          eq(conversations.userId, session.userId)
+        )
+      )
+      .limit(1);
+
+    if (!existing[0]) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+    }
+
+    const updated = await db
+      .update(conversations)
+      .set({
+        pinned: parsed.pinned,
+        updatedAt: new Date(),
+      })
+      .where(eq(conversations.id, parsed.conversationId))
+      .returning();
+
+    return NextResponse.json({ success: true, conversation: updated[0] });
+  } catch (err) {
+    console.error("[conversation/pin]", err);
+    return NextResponse.json({ error: "Failed to pin/unpin conversation" }, { status: 500 });
   }
 }

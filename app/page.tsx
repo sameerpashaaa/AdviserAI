@@ -1,9 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import GradientBackground from "@/components/ui/GradientBackground";
-import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import Navbar from "@/components/layout/Navbar";
 import {
   Brain,
@@ -14,6 +13,25 @@ import {
   TrendingUp,
   Globe,
 } from "lucide-react";
+
+// Lazy-load canvas-heavy components — they don't need SSR and add significant
+// weight to the initial JS bundle.
+const GradientBackground = dynamic(
+  () => import("@/components/ui/GradientBackground"),
+  { ssr: false }
+);
+const CardContainer = dynamic(
+  () => import("@/components/ui/3d-card").then((m) => m.CardContainer),
+  { ssr: false, loading: () => <div style={{ minHeight: 280 }} /> }
+);
+const CardBody = dynamic(
+  () => import("@/components/ui/3d-card").then((m) => m.CardBody),
+  { ssr: false }
+);
+const CardItem = dynamic(
+  () => import("@/components/ui/3d-card").then((m) => m.CardItem),
+  { ssr: false }
+);
 
 const features = [
   {
